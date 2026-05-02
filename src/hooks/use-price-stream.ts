@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { PriceState, ArbitrageOpportunity, SSEPayload, NormalizedPrice, Exchange, CryptoSymbol } from '@/lib/types';
 import { EXCHANGES, DEFAULT_SYMBOLS } from '@/lib/constants';
+
+// Rolling price history: last N mid-prices per symbol
+export type PriceHistory = Record<CryptoSymbol, number[]>;
+const HISTORY_LEN = 60;
 
 function emptyPriceState(symbols: CryptoSymbol[]): PriceState {
   return Object.fromEntries(
@@ -21,6 +25,8 @@ export function usePriceStream() {
   const [opportunities, setOpps]      = useState<ArbitrageOpportunity[]>([]);
   const [connState, setConnState]     = useState<ConnectionState>('connecting');
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
+  const [priceHistory, setPriceHistory] = useState<PriceHistory>({});
+  const historyRef = useRef<PriceHistory>({});
 
   useEffect(() => {
     const es = new EventSource('/api/stream');
@@ -45,6 +51,13 @@ export function usePriceStream() {
           },
         }));
         setLastUpdated(Date.now());
+        // Accumulate mid-price history for sparklines
+        const mid = (p.bid + p.ask) / 2;
+        historyRef.current = {
+          ...historyRef.current,
+          [p.symbol]: [...(historyRef.current[p.symbol] ?? []), mid].slice(-HISTORY_LEN),
+        };
+        setPriceHistory({ ...historyRef.current });
       } else if (payload.type === 'opportunities') {
         setOpps(payload.data as ArbitrageOpportunity[]);
       }
@@ -65,5 +78,5 @@ export function usePriceStream() {
     await fetch(`/api/pairs?symbol=${encodeURIComponent(symbol)}`, { method: 'DELETE' });
   }, []);
 
-  return { symbols, prices, opportunities, connState, lastUpdated, addSymbol, removeSymbol };
+  return { symbols, prices, opportunities, connState, lastUpdated, priceHistory, addSymbol, removeSymbol };
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import type { ConnectionState } from '@/hooks/use-price-stream';
 
 interface TopBarProps {
@@ -88,9 +89,9 @@ export function TopBar({ connState, lastUpdated }: TopBarProps) {
         />
 
         <nav className="dash-nav">
-          <a className="active">Live</a>
-          <a>History</a>
-          <a>Alerts</a>
+          <Link href="/" className="active">Live</Link>
+          <Link href="/history">History</Link>
+          <Link href="/stats">Stats</Link>
         </nav>
 
         <div className="dash-right">

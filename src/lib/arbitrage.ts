@@ -1,5 +1,5 @@
 import type { PriceState, ArbitrageOpportunity, Exchange } from './types';
-import { EXCHANGE_FEES, EXCHANGES, STALE_THRESHOLD_MS } from './constants';
+import { EXCHANGE_FEES, EXCHANGES, STALE_THRESHOLD_MS, MIN_PROFIT_PCT } from './constants';
 
 export function calculateArbitrage(state: PriceState): ArbitrageOpportunity[] {
   const now = Date.now();
@@ -29,7 +29,7 @@ export function calculateArbitrage(state: PriceState): ArbitrageOpportunity[] {
         const netProfit   = revenue - cost;
         const profitPct   = (netProfit / cost) * 100;
 
-        if (profitPct <= 0) continue;
+        if (profitPct < MIN_PROFIT_PCT) continue;
 
         opportunities.push({
           symbol,

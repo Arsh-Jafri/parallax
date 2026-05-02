@@ -9,7 +9,7 @@ import { OpportunityLog } from '@/components/opportunity-log';
 import { PairPicker }     from '@/components/pair-picker';
 
 export function PriceProvider() {
-  const { symbols, prices, opportunities, connState, lastUpdated, addSymbol, removeSymbol } = usePriceStream();
+  const { symbols, prices, opportunities, connState, lastUpdated, priceHistory, addSymbol, removeSymbol } = usePriceStream();
 
   // Two-column responsive grid for price cards. Many symbols stack into rows.
   const cardColumns = symbols.length <= 1 ? '1fr' : 'repeat(auto-fit, minmax(420px, 1fr))';
@@ -20,7 +20,7 @@ export function PriceProvider() {
 
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '24px 24px 80px' }}>
         {/* KPI row */}
-        <KpiGrid prices={prices} opportunities={opportunities} symbols={symbols} />
+        <KpiGrid prices={prices} opportunities={opportunities} symbols={symbols} priceHistory={priceHistory} />
 
         {/* Pair picker */}
         <div style={{ marginTop: 16 }}>

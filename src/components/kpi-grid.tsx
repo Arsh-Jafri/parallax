@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
 import type { PriceState, ArbitrageOpportunity, CryptoSymbol } from '@/lib/types';
 import { EXCHANGES } from '@/lib/constants';
+import type { PriceHistory } from '@/hooks/use-price-stream';
 import { Ticker } from './ticker';
 import { Sparkline } from './sparkline';
 
@@ -10,21 +10,12 @@ interface KpiGridProps {
   prices: PriceState;
   opportunities: ArbitrageOpportunity[];
   symbols: CryptoSymbol[];
+  priceHistory: PriceHistory;
 }
 
-function makeSpark(seed: number, n = 40, vol = 0.4): number[] {
-  const arr = [seed];
-  for (let i = 1; i < n; i++) arr.push(arr[i - 1] + (Math.random() - 0.5) * vol);
-  return arr;
-}
+const EMPTY_SPARK: number[] = [];
 
-export function KpiGrid({ prices, opportunities, symbols }: KpiGridProps) {
-  const sparks = useMemo(() => ({
-    spread: makeSpark(0.5, 40, 0.3),
-    price:  makeSpark(0.5, 40, 0.5),
-    opps:   makeSpark(0.3, 40, 0.25),
-    latency: makeSpark(0.5, 40, 0.15),
-  }), []);
+export function KpiGrid({ prices, opportunities, symbols, priceHistory }: KpiGridProps) {
 
   // Use the first watched symbol as the headline mid-price
   const headlineSym = symbols[0];
@@ -55,7 +46,7 @@ export function KpiGrid({ prices, opportunities, symbols }: KpiGridProps) {
           )}
         </div>
         <div style={{ marginTop: 4 }}>
-          <Sparkline data={sparks.spread} tone="profit" height={28}/>
+          <Sparkline data={EMPTY_SPARK} tone="profit" height={28}/>
         </div>
       </div>
 
@@ -70,7 +61,7 @@ export function KpiGrid({ prices, opportunities, symbols }: KpiGridProps) {
           )}
         </div>
         <div style={{ marginTop: 4 }}>
-          <Sparkline data={sparks.price} tone="accent" height={28}/>
+          <Sparkline data={headlineSym ? (priceHistory[headlineSym] ?? EMPTY_SPARK) : EMPTY_SPARK} tone="accent" height={28}/>
         </div>
       </div>
 
@@ -84,7 +75,7 @@ export function KpiGrid({ prices, opportunities, symbols }: KpiGridProps) {
           )}
         </div>
         <div style={{ marginTop: 4 }}>
-          <Sparkline data={sparks.opps} tone="profit" height={28}/>
+          <Sparkline data={EMPTY_SPARK} tone="profit" height={28}/>
         </div>
       </div>
 
@@ -98,7 +89,7 @@ export function KpiGrid({ prices, opportunities, symbols }: KpiGridProps) {
           </span>
         </div>
         <div style={{ marginTop: 4 }}>
-          <Sparkline data={sparks.latency} tone="accent" height={28}/>
+          <Sparkline data={EMPTY_SPARK} tone="accent" height={28}/>
         </div>
       </div>
     </div>

@@ -1,0 +1,68 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: parallax
+      POSTGRES_USER: parallax
+      POSTGRES_PASSWORD: parallax
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parallax"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ingestion:
+    build: ./ingestion
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://redis:6379
+    restart: unless-stopped
+
+  engine:
+    build: ./engine
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://parallax:parallax@postgres:5432/parallax
+      REDIS_URL: redis://redis:6379
+      PORT: "8000"
+    restart: unless-stopped
+
+  frontend:
+    build: .
+    depends_on:
+      - engine
+    ports:
+      - "3333:3333"
+    environment:
+      NEXT_PUBLIC_API_URL: http://engine:8000
+      PORT: "3333"
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:

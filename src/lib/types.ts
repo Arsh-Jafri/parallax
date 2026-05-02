@@ -29,6 +29,15 @@ export interface ConnectionStatus {
   lastSeen: number;
 }
 
+export interface SpreadSnapshot {
+  pair: CryptoSymbol;
+  exchangeBuy: Exchange;
+  exchangeSell: Exchange;
+  rawSpread: number;
+  netSpread: number;
+  capturedAt: number;
+}
+
 export type SSEPayload =
   | { type: 'price_snapshot'; data: PriceState }
   | { type: 'price'; data: NormalizedPrice }

@@ -2,13 +2,20 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 import { getExchangeManager } from '@/lib/exchange-manager';
-import { PAIR_CATALOG } from '@/lib/constants';
+import { fastapiEnabled } from '@/lib/fastapi-proxy';
+
+const FASTAPI_URL = process.env.FASTAPI_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
 export async function GET(): Promise<Response> {
+  if (fastapiEnabled()) {
+    const res = await fetch(`${FASTAPI_URL}/pairs`, { next: { revalidate: 0 } });
+    const d = await res.json() as { pairs: string[] };
+    return Response.json({ watched: d.pairs ?? [], catalog: d.pairs ?? [] });
+  }
   const manager = getExchangeManager();
   return Response.json({
     watched: manager.getSymbols(),
-    catalog: PAIR_CATALOG,
+    catalog: manager.getAvailablePairs(),
   });
 }
 
