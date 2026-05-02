@@ -9,10 +9,10 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
 } from 'recharts';
 import { PageShell } from './page-shell';
 import type { SpreadSnapshot, ArbitrageOpportunity } from '@/lib/types';
+import { axisProps, gridProps, tooltipStyle, tooltipCursor, FONT, FG3 } from '@/lib/chart-style';
 
 type Range = '1H' | '6H' | '24H' | '7D';
 
@@ -22,12 +22,12 @@ interface ChartPoint {
 }
 
 const COMBOS = [
-  { key: 'gemini→coinbase',  buy: 'gemini',   sell: 'coinbase', color: '#5d92ff' },
-  { key: 'gemini→kraken',    buy: 'gemini',   sell: 'kraken',   color: '#34d3a0' },
-  { key: 'coinbase→kraken',  buy: 'coinbase', sell: 'kraken',   color: '#fbbf24' },
-  { key: 'coinbase→gemini',  buy: 'coinbase', sell: 'gemini',   color: '#a78bfa' },
-  { key: 'kraken→gemini',    buy: 'kraken',   sell: 'gemini',   color: '#f0573f' },
-  { key: 'kraken→coinbase',  buy: 'kraken',   sell: 'coinbase', color: '#fb923c' },
+  { key: 'gemini→coinbase',  color: '#c47a3a' },   // orange
+  { key: 'gemini→kraken',    color: '#4a7ab5' },   // blue
+  { key: 'coinbase→gemini',  color: '#7c5ea8' },   // purple
+  { key: 'coinbase→kraken',  color: '#4e9e7a' },   // teal
+  { key: 'kraken→gemini',    color: '#b85a6a' },   // rose
+  { key: 'kraken→coinbase',  color: '#8a8a3a' },   // olive
 ];
 
 function formatTime(ts: number, range: Range): string {
@@ -143,43 +143,54 @@ export function HistoryView() {
         </div>
         <div style={{ padding: '8px 18px 20px' }}>
           {chartData.length === 0 ? (
-            <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+            <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-muted)', fontSize: 13 }}>
               {loading ? 'Loading…' : 'No spread history yet — data accumulates every 5 seconds'}
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-                <XAxis
-                  dataKey="time"
-                  tickFormatter={t => formatTime(t as number, range)}
-                  tick={{ fontSize: 11, fill: 'var(--fg-tertiary)', fontFamily: 'var(--font-mono)' }}
-                  minTickGap={60}
-                />
-                <YAxis
-                  tickFormatter={v => `${(v as number).toFixed(2)}%`}
-                  tick={{ fontSize: 11, fill: 'var(--fg-tertiary)', fontFamily: 'var(--font-mono)' }}
-                  width={56}
-                />
-                <Tooltip
-                  formatter={(value) => [`${(value as number)?.toFixed(3) ?? '—'}%`]}
-                  labelFormatter={t => formatTime(t as number, range)}
-                  contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 12 }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+            <>
+              {/* Inline legend */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', padding: '0 4px 10px', marginLeft: 56 }}>
                 {COMBOS.map(c => (
-                  <Line
-                    key={c.key}
-                    type="monotone"
-                    dataKey={c.key}
-                    stroke={c.color}
-                    dot={false}
-                    strokeWidth={1.5}
-                    connectNulls
-                  />
+                  <span key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: FG3, fontFamily: FONT }}>
+                    <span style={{ width: 14, height: 2, background: c.color, display: 'inline-block', borderRadius: 1 }} />
+                    {c.key}
+                  </span>
                 ))}
-              </LineChart>
-            </ResponsiveContainer>
+              </div>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={chartData} margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
+                  <CartesianGrid {...gridProps} />
+                  <XAxis
+                    dataKey="time"
+                    tickFormatter={t => formatTime(t as number, range)}
+                    {...axisProps}
+                    minTickGap={60}
+                  />
+                  <YAxis
+                    tickFormatter={v => `${(v as number).toFixed(2)}%`}
+                    {...axisProps}
+                    width={56}
+                  />
+                  <Tooltip
+                    formatter={(value) => [`${(value as number)?.toFixed(3) ?? '—'}%`]}
+                    labelFormatter={t => formatTime(t as number, range)}
+                    contentStyle={tooltipStyle}
+                    cursor={tooltipCursor}
+                  />
+                  {COMBOS.map(c => (
+                    <Line
+                      key={c.key}
+                      type="monotone"
+                      dataKey={c.key}
+                      stroke={c.color}
+                      dot={false}
+                      strokeWidth={1.5}
+                      connectNulls
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </>
           )}
         </div>
       </div>

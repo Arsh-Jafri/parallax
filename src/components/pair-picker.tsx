@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PAIR_CATALOG } from '@/lib/constants';
+import { CryptoIcon } from './crypto-icon';
 
 interface PairPickerProps {
   watched: string[];
@@ -86,7 +87,7 @@ export function PairPicker({ watched, onAdd, onRemove }: PairPickerProps) {
           key={sym}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '4px 6px 4px 10px',
+            padding: '4px 6px 4px 8px',
             background: 'var(--bg-sunken)',
             border: '1px solid var(--border-default)',
             borderRadius: 999,
@@ -94,6 +95,7 @@ export function PairPicker({ watched, onAdd, onRemove }: PairPickerProps) {
             color: 'var(--fg-primary)',
           }}
         >
+          <CryptoIcon symbol={sym} size={16} />
           {sym}/USD
           <button
             onClick={() => onRemove(sym)}
@@ -162,7 +164,10 @@ export function PairPicker({ watched, onAdd, onRemove }: PairPickerProps) {
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <span>{sym}/USD</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <CryptoIcon symbol={sym} size={18} />
+                  {sym}/USD
+                </span>
                 <span style={{ color: 'var(--fg-tertiary)' }}><PlusIcon /></span>
               </button>
             ))}

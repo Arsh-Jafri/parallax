@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import type { PriceState, Exchange, CryptoSymbol } from '@/lib/types';
 import { EXCHANGES, EXCHANGE_FEES, STALE_THRESHOLD_MS } from '@/lib/constants';
 import { Ticker } from './ticker';
+import { CryptoIcon } from './crypto-icon';
 
 interface PriceCardProps {
   symbol: CryptoSymbol;
@@ -26,6 +27,13 @@ function ageStr(ts: number): string {
   return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m`;
 }
 
+function ageColor(ts: number): string {
+  const s = (Date.now() - ts) / 1000;
+  if (s > 10) return 'var(--loss)';
+  if (s > 5)  return 'var(--warn)';
+  return 'var(--fg-tertiary)';
+}
+
 export function PriceCard({ symbol, prices }: PriceCardProps) {
   const [, tick] = useState(0);
   useEffect(() => {
@@ -38,9 +46,12 @@ export function PriceCard({ symbol, prices }: PriceCardProps) {
   return (
     <div className="dash-card">
       <div className="dash-card-head">
-        <h3 className="dash-card-title">{symbol} / USD</h3>
+        <h3 className="dash-card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CryptoIcon symbol={symbol} size={20} />
+          {symbol} / USD
+        </h3>
         <span className={`status-dot ${hasAny ? 'live' : 'stale'}`}>
-          {hasAny ? 'streaming' : 'connecting'}
+          {hasAny ? '' : 'connecting'}
         </span>
       </div>
 
@@ -51,7 +62,6 @@ export function PriceCard({ symbol, prices }: PriceCardProps) {
               <th>Exchange</th>
               <th className="right">Bid</th>
               <th className="right">Ask</th>
-              <th className="right">Spread</th>
               <th className="right" style={{ paddingRight: 16 }}>Age</th>
             </tr>
           </thead>
@@ -75,13 +85,11 @@ export function PriceCard({ symbol, prices }: PriceCardProps) {
                     </td>
                     <td className="right" style={{ color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)' }}>—</td>
                     <td className="right" style={{ color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)' }}>—</td>
-                    <td className="right" style={{ color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)' }}>—</td>
                     <td className="right" style={{ color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)', paddingRight: 16 }}>—</td>
                   </tr>
                 );
               }
 
-              const spread = ((p.ask - p.bid) / p.bid * 100).toFixed(3);
               return (
                 <tr key={exchange} style={{ opacity: stale ? 0.5 : 1 }}>
                   <td>
@@ -99,8 +107,7 @@ export function PriceCard({ symbol, prices }: PriceCardProps) {
                   <td className="right">
                     <Ticker value={p.ask} size="md" decimals={2} />
                   </td>
-                  <td className="right mono tnum" style={{ color: 'var(--fg-secondary)' }}>{spread}%</td>
-                  <td className="right mono" style={{ color: 'var(--fg-tertiary)', paddingRight: 16 }}>{ageStr(p.timestamp)}</td>
+                  <td className="right mono" style={{ color: ageColor(p.timestamp), paddingRight: 16 }}>{ageStr(p.timestamp)}</td>
                 </tr>
               );
             })}

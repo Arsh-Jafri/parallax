@@ -4,9 +4,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { PriceState, ArbitrageOpportunity, SSEPayload, NormalizedPrice, Exchange, CryptoSymbol } from '@/lib/types';
 import { EXCHANGES, DEFAULT_SYMBOLS } from '@/lib/constants';
 
-// Rolling price history: last N mid-prices per symbol
+// Rolling price history: last N mid-prices per symbol (for sparklines)
 export type PriceHistory = Record<CryptoSymbol, number[]>;
 const HISTORY_LEN = 60;
+
+// Per-exchange price snapshots for divergence chart
+export interface PricePoint { ts: number; gemini: number | null; coinbase: number | null; kraken: number | null; }
+export type ChartHistory = Record<CryptoSymbol, PricePoint[]>;
+const CHART_LEN = 120;
 
 function emptyPriceState(symbols: CryptoSymbol[]): PriceState {
   return Object.fromEntries(
@@ -25,8 +30,12 @@ export function usePriceStream() {
   const [opportunities, setOpps]      = useState<ArbitrageOpportunity[]>([]);
   const [connState, setConnState]     = useState<ConnectionState>('connecting');
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
-  const [priceHistory, setPriceHistory] = useState<PriceHistory>({});
-  const historyRef = useRef<PriceHistory>({});
+  const [priceHistory, setPriceHistory]   = useState<PriceHistory>({});
+  const [chartHistory, setChartHistory]   = useState<ChartHistory>({});
+  const historyRef    = useRef<PriceHistory>({});
+  const chartRef      = useRef<ChartHistory>({});
+  // Track latest known mid-price per exchange per symbol for chart point construction
+  const latestRef     = useRef<Partial<Record<Exchange, Partial<Record<CryptoSymbol, number>>>>>({});
 
   useEffect(() => {
     const es = new EventSource('/api/stream');
@@ -58,6 +67,22 @@ export function usePriceStream() {
           [p.symbol]: [...(historyRef.current[p.symbol] ?? []), mid].slice(-HISTORY_LEN),
         };
         setPriceHistory({ ...historyRef.current });
+
+        // Track latest per-exchange mid for chart
+        if (!latestRef.current[p.exchange as Exchange]) latestRef.current[p.exchange as Exchange] = {};
+        latestRef.current[p.exchange as Exchange]![p.symbol] = mid;
+        const latest = latestRef.current;
+        const point: PricePoint = {
+          ts:       Date.now(),
+          gemini:   latest.gemini?.[p.symbol]   ?? null,
+          coinbase: latest.coinbase?.[p.symbol] ?? null,
+          kraken:   latest.kraken?.[p.symbol]   ?? null,
+        };
+        chartRef.current = {
+          ...chartRef.current,
+          [p.symbol]: [...(chartRef.current[p.symbol] ?? []), point].slice(-CHART_LEN),
+        };
+        setChartHistory({ ...chartRef.current });
       } else if (payload.type === 'opportunities') {
         setOpps(payload.data as ArbitrageOpportunity[]);
       }
@@ -78,5 +103,5 @@ export function usePriceStream() {
     await fetch(`/api/pairs?symbol=${encodeURIComponent(symbol)}`, { method: 'DELETE' });
   }, []);
 
-  return { symbols, prices, opportunities, connState, lastUpdated, priceHistory, addSymbol, removeSymbol };
+  return { symbols, prices, opportunities, connState, lastUpdated, priceHistory, chartHistory, addSymbol, removeSymbol };
 }

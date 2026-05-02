@@ -10,6 +10,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
+import { axisProps, gridProps, tooltipStyle, tooltipCursor } from '@/lib/chart-style';
 import { PageShell } from './page-shell';
 import type { ArbitrageOpportunity } from '@/lib/types';
 
@@ -30,7 +31,7 @@ interface PairCount {
 function buildHourBuckets(opps: ArbitrageOpportunity[]): HourBucket[] {
   const buckets: Record<number, { count: number; totalProfit: number }> = {};
   for (const o of opps) {
-    const h = new Date(o.timestamp).getHours();
+    const h = new Date(o.timestamp).getUTCHours();
     if (!buckets[h]) buckets[h] = { count: 0, totalProfit: 0 };
     buckets[h].count++;
     buckets[h].totalProfit += o.profitPct;
@@ -135,20 +136,21 @@ export function StatsView() {
         </div>
         <div style={{ padding: '8px 18px 20px' }}>
           {totalCount === 0 ? (
-            <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+            <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-muted)', fontSize: 13 }}>
               No opportunity data in this window
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={hourBuckets} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
-                <XAxis dataKey="hour" tick={{ fontSize: 10, fill: 'var(--fg-tertiary)', fontFamily: 'var(--font-mono)' }} interval={3} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--fg-tertiary)', fontFamily: 'var(--font-mono)' }} width={36} />
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={hourBuckets} margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
+                <CartesianGrid {...gridProps} />
+                <XAxis dataKey="hour" {...axisProps} tick={{ ...axisProps.tick, fontSize: 10 }} interval={3} />
+                <YAxis {...axisProps} width={36} />
                 <Tooltip
                   formatter={(v) => [v as number, 'count']}
-                  contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 12 }}
+                  contentStyle={tooltipStyle}
+                  cursor={tooltipCursor}
                 />
-                <Bar dataKey="count" fill="#5d92ff" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="count" fill="var(--fg-tertiary)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -163,20 +165,21 @@ export function StatsView() {
         </div>
         <div style={{ padding: '8px 18px 20px' }}>
           {routeCounts.length === 0 ? (
-            <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+            <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg-muted)', fontSize: 13 }}>
               No opportunity data in this window
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={routeCounts} layout="vertical" margin={{ top: 4, right: 60, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--fg-tertiary)', fontFamily: 'var(--font-mono)' }} />
-                <YAxis type="category" dataKey="route" width={110} tick={{ fontSize: 11, fill: 'var(--fg-secondary)', fontFamily: 'var(--font-mono)' }} />
+              <BarChart data={routeCounts} layout="vertical" margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
+                <CartesianGrid {...gridProps} vertical={false} horizontal={false} />
+                <XAxis type="number" {...axisProps} />
+                <YAxis type="category" dataKey="route" width={110} {...axisProps} tick={{ ...axisProps.tick, fill: 'var(--fg-secondary)' }} />
                 <Tooltip
                   formatter={(v, name) => [name === 'count' ? v as number : `${(v as number).toFixed(3)}%`, name === 'count' ? 'occurrences' : 'avg profit']}
-                  contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 12 }}
+                  contentStyle={tooltipStyle}
+                  cursor={tooltipCursor}
                 />
-                <Bar dataKey="count" fill="#34d3a0" radius={[0, 3, 3, 0]} />
+                <Bar dataKey="count" fill="var(--fg-tertiary)" radius={[0, 3, 3, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
