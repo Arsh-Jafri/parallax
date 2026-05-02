@@ -8,6 +8,7 @@ import type { ConnectionState } from '@/hooks/use-price-stream';
 interface TopBarProps {
   connState?: ConnectionState;
   lastUpdated?: number | null;
+  activeHref?: string;
 }
 
 function SunIcon() {
@@ -27,10 +28,10 @@ function MoonIcon() {
   );
 }
 
-export function TopBar({ connState = 'open', lastUpdated = null }: TopBarProps) {
+export function TopBar({ connState = 'open', lastUpdated = null, activeHref }: TopBarProps) {
   const [now, setNow]     = useState(Date.now());
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const pathname          = usePathname();
+  const pathname          = activeHref ?? usePathname();
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);

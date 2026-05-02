@@ -60,8 +60,9 @@ function findLastUpdateMs(prices: PriceState, symbols: CryptoSymbol[]): number |
 }
 
 function ageLabel(ms: number): string {
-  const s = (Date.now() - ms) / 1000;
-  if (s < 1)  return '<1s ago';
+  const diff = Date.now() - ms;
+  if (diff < 1000) return '<1s';
+  const s = diff / 1000;
   if (s < 60) return `${s.toFixed(1)}s ago`;
   return `${Math.floor(s / 60)}m ago`;
 }
