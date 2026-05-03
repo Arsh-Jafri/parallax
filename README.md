@@ -2,7 +2,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="public/white-text-logo.png?v=2">
   <source media="(prefers-color-scheme: light)" srcset="public/black-text-logo.png?v=2">
-  <img alt="Parallax" src="public/black-text-logo.png?v=2" height="60">
+  <img alt="Parallax" src="public/black-text-logo.png?v=2" height="80">
 </picture>
 </div>
 
