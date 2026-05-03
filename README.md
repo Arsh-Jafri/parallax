@@ -1,14 +1,14 @@
 <div align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)"  srcset="public/white-text-logo.png">
-  <source media="(prefers-color-scheme: light)" srcset="public/black-text-logo.png">
-  <img alt="Parallax" src="public/black-text-logo.png" height="60">
+  <source media="(prefers-color-scheme: dark)"  srcset="public/white-text-logo.png?v=2">
+  <source media="(prefers-color-scheme: light)" srcset="public/black-text-logo.png?v=2">
+  <img alt="Parallax" src="public/black-text-logo.png?v=2" height="60">
 </picture>
 </div>
 
 Real-time crypto arbitrage monitor. Ingests live WebSocket price feeds from Gemini, Coinbase, and Kraken, computes fee-adjusted spreads across every available trading pair, and surfaces opportunities through a live dashboard backed by a Go/Python data pipeline.
 
-<img src="public/preview.png" alt="Parallax dashboard preview" style="border-radius: 12px; width: 100%;" />
+<img src="public/preview.png?v=2" alt="Parallax dashboard preview" style="border-radius: 12px; width: 100%;" />
 
 ---
 
