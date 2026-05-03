@@ -6,7 +6,7 @@
 </picture>
 </div>
 
-Real-time crypto arbitrage monitor. Ingests live WebSocket price feeds from Gemini, Coinbase, and Kraken, computes fee-adjusted spreads across every available trading pair, and surfaces opportunities through a live dashboard backed by a Go/Python data pipeline.
+Parallax is a real-time crypto arbitrage scanner that ingests live WebSocket price feeds from Gemini, Coinbase, and Kraken, computes fee-adjusted spreads across every available trading pair, and surfaces opportunities through a live dashboard backed by a Go/Python data pipeline.
 
 <img src="public/preview.png?v=2" alt="Parallax dashboard preview" style="border-radius: 12px; width: 100%;" />
 
